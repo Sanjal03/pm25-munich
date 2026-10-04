@@ -1,0 +1,31 @@
+\chapter{Conclusion}
+\phantomsection
+\label{chapter:Conclusion}
+
+\section{Summary of Findings}
+\label{section:conclusion-summary}
+
+This thesis benchmarked three tree ensembles and two sequence models against a Persistence baseline for one-hour-ahead PM$_{2.5}$ estimation at seven stations in the Munich region (2019--2024), and used the resulting framework to analyse feature-group importance (RQ1) and the COVID-19 lockdown effect (RQ2). The tree ensembles lie within 0.001 of each other (mean $R^2$: CatBoost 0.954, XGBoost 0.9535, LightGBM 0.953), ahead of DLinear (0.945) and PatchTST (0.944), and all learned models clearly outperform Persistence (0.913). These results refer to one-hour-ahead estimation with concurrently observed covariates.
+
+\section{Answers to the Research Questions}
+\label{section:conclusion-rq}
+
+\paragraph{RQ1: Which categories of engineered features contribute most to hourly PM$_{2.5}$ forecasting accuracy, and does this differ across model architectures?}
+\textbf{Answer:} PM$_{2.5}$ history dominates in every architecture, but its weight differs by model family. Removing it raises test MAE by about 41\% for the tree ensembles and by 62\% (PatchTST) to 71\% (DLinear) for the sequence models. Co-pollutants matter far less (3--7\%), meteorology at most about 2\%, and PM$_{2.5}$ rolling statistics and temporal features add nothing measurable (changes of $-2$ to $0$\%). The consistency across very different model families indicates that short-term persistence is a property of the data, not of one architecture, although the one-hour-ahead task with concurrent covariates likely amplifies it.
+
+\paragraph{RQ2: Can a validated recursive counterfactual model reliably isolate spatially resolved lockdown impacts over long temporal horizons?}
+\textbf{Answer:} Only partially, and only with explicit correction for rollout drift. A one-step Validity Gate is necessary but not sufficient for a 44-day recursive extrapolation. The raw counterfactual shows a positive lockdown gap (observed below counterfactual) in 29 of 35 model--station runs (83\%). However, the rollout's own drift (cumulative MAE 2.10~\textmu g/m$^3$) exceeds the mean absolute raw gap (0.68~\textmu g/m$^3$). After subtracting each run's baseline drift, 13 of 35 runs (37\%) remain positive, and 10 of them are at Augsburg/LfU and Andechs/Rothenfeld (5 of 5 models each). At the remaining stations the raw effect is largely absorbed by drift (Bourges-Platz 2 of 5 models, Johanneskirchen 1 of 5, the other three stations none). Because co-pollutants and the network-mean PM$_{2.5}$ stay at their observed, lockdown-affected values, the counterfactual is conditional and the gap likely conservative. The estimates are point estimates without formal significance tests.
+
+\section{Future Research}
+\label{section:conclusion-future}
+
+Four extensions follow directly from these findings:
+
+\begin{enumerate}
+    \item \textbf{Integrated drift correction and uncertainty bounds:} build drift correction and interval estimates into the recursive rollout rather than applying correction post hoc.
+    \item \textbf{Block-bootstrap inference:} replace point estimates of the lockdown gap with confidence intervals and hypothesis tests that respect the strong autocorrelation of hourly PM$_{2.5}$.
+    \item \textbf{Lagged covariates:} restrict co-pollutants and network-mean PM$_{2.5}$ to information available before the forecast hour, which makes the task a true forecast and removes the conditioning of the counterfactual on lockdown-affected inputs.
+    \item \textbf{Covariate-informed spatial selection:} choose stations using land use, traffic density and microclimate rather than correlation with a reference station alone.
+\end{enumerate}
+
+Ultimately, high one-step accuracy does not by itself justify long-horizon counterfactual inference; explicit drift diagnostics are a prerequisite for using such models as credible evidence in policy evaluation.

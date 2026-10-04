@@ -1,0 +1,12 @@
+{
+  "station": "johanneskirchen",
+  "model": "dlinear",
+  "sanity_valid": true,
+  "sanity_R2": 0.9254,
+  "sanity_gap": -0.146,
+  "mean_counterfactual": 12.12,
+  "mean_actual": 12.29,
+  "gap": -0.18,
+  "gap_pct": -1.4,
+  "method": "recursive_rollout"
+}

@@ -1,0 +1,9 @@
+station,display_name,distance_km,pearson_r,n_days
+DEBY037,München/Stachus,1,0.944,2188
+DEBY039,München/Lothstraße,3,0.95,2167
+DEBY089,München/Johanneskirchen,12,0.912,2190
+DEBY109,Andechs/Rothenfeld,35,0.692,2183
+DEBY007,Augsburg/Bourges-Platz,70,0.885,2188
+DEBY099,Augsburg/LfU,70,0.886,2153
+DEBY121,Oberaudorf/Inntal-Autobahn,71,0.668,2147
+DEBY012,Burghausen/Marktler Straße,93,0.785,2190

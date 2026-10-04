@@ -1,0 +1,9 @@
+station,group,environment,distance_km,pm25_completeness_pct,mean_pm25,n_days,r_daily,r_deseasonalized
+München/Lothstraße,study,Urban background,1.5,98.6,8.35,2167,0.95,0.95
+München/Stachus,study,Traffic,2.5,99.6,9.85,2188,0.944,0.944
+München/Johanneskirchen,study,Suburban,8.7,99.7,8.43,2190,0.912,0.914
+Andechs/Rothenfeld,study,Rural background,30.9,99.2,6.63,2183,0.692,0.725
+Augsburg/LfU,study,Suburban,50.8,97.8,8.68,2153,0.886,0.882
+Augsburg/Bourges-Platz,study,Urban background,54.2,99.7,9.26,2188,0.885,0.883
+Nürnberg/Muggenhof,control,Urban background,150.7,99.6,10.63,2186,0.796,0.794
+Stuttgart-Bad Cannstatt,control,Urban background,185.2,99.7,8.92,2190,0.86,0.861

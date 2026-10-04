@@ -1,0 +1,8 @@
+station,R2,MAE,RMSE,Bias,n_test
+landshuter_allee,0.9478,1.233,1.832,0.203,1608
+stachus,0.9196,1.364,1.966,-0.307,1608
+lothstrasse,0.9577,0.807,1.271,0.23,1608
+johanneskirchen,0.9155,1.351,2.264,-0.031,1608
+augsburg_bourges,0.9642,1.13,1.693,0.058,1608
+augsburg_lfu,0.9467,1.273,1.937,-0.026,1608
+andechs,0.9081,0.864,1.358,-0.107,1608

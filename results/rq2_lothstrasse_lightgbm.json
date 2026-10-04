@@ -1,0 +1,12 @@
+{
+  "station": "lothstrasse",
+  "model": "lightgbm",
+  "sanity_valid": true,
+  "sanity_R2": 0.9701,
+  "sanity_gap": 0.106,
+  "mean_counterfactual": 11.56,
+  "mean_actual": 11.13,
+  "gap": 0.43,
+  "gap_pct": 3.8,
+  "method": "recursive_rollout"
+}

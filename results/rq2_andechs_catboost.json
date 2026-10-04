@@ -1,0 +1,12 @@
+{
+  "station": "andechs",
+  "model": "catboost",
+  "sanity_valid": true,
+  "sanity_R2": 0.9222,
+  "sanity_gap": 0.107,
+  "mean_counterfactual": 11.19,
+  "mean_actual": 10.27,
+  "gap": 0.92,
+  "gap_pct": 8.9,
+  "method": "recursive_rollout"
+}

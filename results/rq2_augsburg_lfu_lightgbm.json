@@ -1,0 +1,12 @@
+{
+  "station": "augsburg_lfu",
+  "model": "lightgbm",
+  "sanity_valid": true,
+  "sanity_R2": 0.9535,
+  "sanity_gap": -0.101,
+  "mean_counterfactual": 11.78,
+  "mean_actual": 10.51,
+  "gap": 1.27,
+  "gap_pct": 12.1,
+  "method": "recursive_rollout"
+}

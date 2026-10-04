@@ -1,0 +1,12 @@
+{
+  "station": "stachus",
+  "model": "dlinear",
+  "sanity_valid": true,
+  "sanity_R2": 0.9329,
+  "sanity_gap": -0.317,
+  "mean_counterfactual": 11.6,
+  "mean_actual": 11.44,
+  "gap": 0.16,
+  "gap_pct": 1.4,
+  "method": "recursive_rollout"
+}

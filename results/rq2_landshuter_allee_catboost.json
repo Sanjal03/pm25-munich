@@ -1,0 +1,12 @@
+{
+  "station": "landshuter_allee",
+  "model": "catboost",
+  "sanity_valid": true,
+  "sanity_R2": 0.9623,
+  "sanity_gap": 0.254,
+  "mean_counterfactual": 13.37,
+  "mean_actual": 12.7,
+  "gap": 0.67,
+  "gap_pct": 5.3,
+  "method": "recursive_rollout"
+}

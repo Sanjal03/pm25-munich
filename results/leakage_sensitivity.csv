@@ -1,0 +1,22 @@
+stage,station,threshold_full,threshold_train_only,abs_diff,pct_diff
+"1a: 99.5th pct cap, raw",landshuter_allee,41.0,42.0,1.0,2.38
+"1b: 99.5th pct cap, imputed (02)",landshuter_allee,41.0,42.0,1.0,2.38
+2: Q3+3*IQR fence (03),landshuter_allee,38.0,42.0,4.0,9.52
+"1a: 99.5th pct cap, raw",stachus,40.0,40.0,0.0,0.0
+"1b: 99.5th pct cap, imputed (02)",stachus,40.0,40.0,0.0,0.0
+2: Q3+3*IQR fence (03),stachus,37.0,37.0,0.0,0.0
+"1a: 99.5th pct cap, raw",lothstrasse,36.0,35.28,0.72,2.04
+"1b: 99.5th pct cap, imputed (02)",lothstrasse,36.0,35.0,1.0,2.86
+2: Q3+3*IQR fence (03),lothstrasse,32.0,32.0,0.0,0.0
+"1a: 99.5th pct cap, raw",johanneskirchen,37.0,37.0,0.0,0.0
+"1b: 99.5th pct cap, imputed (02)",johanneskirchen,37.0,37.0,0.0,0.0
+2: Q3+3*IQR fence (03),johanneskirchen,35.0,36.0,1.0,2.78
+"1a: 99.5th pct cap, raw",augsburg_bourges,40.0,40.0,0.0,0.0
+"1b: 99.5th pct cap, imputed (02)",augsburg_bourges,40.0,40.0,0.0,0.0
+2: Q3+3*IQR fence (03),augsburg_bourges,36.0,40.0,4.0,10.0
+"1a: 99.5th pct cap, raw",augsburg_lfu,39.0,39.0,0.0,0.0
+"1b: 99.5th pct cap, imputed (02)",augsburg_lfu,39.0,39.0,0.0,0.0
+2: Q3+3*IQR fence (03),augsburg_lfu,36.0,36.0,0.0,0.0
+"1a: 99.5th pct cap, raw",andechs,31.0,31.435,0.435,1.38
+"1b: 99.5th pct cap, imputed (02)",andechs,31.0,31.0,0.0,0.0
+2: Q3+3*IQR fence (03),andechs,27.0,27.0,0.0,0.0

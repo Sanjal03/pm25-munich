@@ -1,0 +1,12 @@
+{
+  "station": "lothstrasse",
+  "model": "patchtst",
+  "sanity_valid": true,
+  "sanity_R2": 0.9601,
+  "sanity_gap": 0.241,
+  "mean_counterfactual": 12.71,
+  "mean_actual": 11.13,
+  "gap": 1.58,
+  "gap_pct": 14.2,
+  "method": "recursive_rollout"
+}

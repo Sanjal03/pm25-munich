@@ -1,0 +1,71 @@
+\chapter{Literature Review}
+\phantomsection
+\label{chapter:Literature Review}
+Fine particulate matter (PM$_{2.5}$, particles with an aerodynamic diameter of 2.5~$\mu$m or smaller) is one of the leading environmental health risks worldwide. Its particles penetrate deep into the respiratory system and the bloodstream, and long-term exposure is associated with increased premature mortality~\parencite{vodonos2018, who2021}. After emission from sources such as road traffic, residential heating and industry, PM$_{2.5}$ concentrations are strongly shaped by temperature, humidity, wind and pressure, which makes them highly variable in time and space. Accurate forecasts allow authorities to issue timely warnings and to evaluate emission-reduction policies, and recent advances in machine learning capture the nonlinear relationships involved more effectively than many traditional statistical approaches~\parencite{wu2025}. This chapter reviews the data sources, forecasting models and validation strategies used in the literature, followed by feature-importance studies, COVID-19 counterfactual modelling and the resulting research gaps.
+
+\section{Data Used for PM$_{2.5}$ Forecasting}
+\phantomsection
+\label{section:Data Used for PM$_{2.5}$ Forecasting}
+Ground-based monitoring stations provide the core time series, supplying hourly measurements of PM$_{2.5}$ and co-pollutants such as PM$_{10}$, NO$_2$, SO$_2$ and CO that are routinely used as predictors~\parencite{ozupak2025, lilhore2025}. Meteorological variables (temperature, humidity, wind speed and direction, pressure) are consistently added to capture dispersion and accumulation~\parencite{tirinck2025, lilhore2025, zeng2026}. To overcome the sparse spatial coverage of ground sensors, some studies fuse remote-sensing products such as Sentinel-5P, MODIS and Landsat-8, at the cost of coarser temporal resolution~\parencite{kalaiselvi2025}.
+
+Historical PM$_{2.5}$ observations encoded as lag features are widely used because of the strong temporal autocorrelation of the series, and incorporating them has been reported to improve forecasts compared with meteorology-based predictors alone~\parencite{kang2023}. Forecasting nevertheless remains difficult: concentrations depend nonlinearly on their predictors, are autocorrelated over several time scales and vary spatially with local emissions and topography~\parencite{wu2025}, and temperature inversions trap pollutants near the surface~\parencite{zeng2026}. These dynamics are hard to capture with linear, stationary statistical models, which is why machine learning approaches are now standard~\parencite{wu2025, singh2026}. The relative contribution of the predictor groups is discussed in Section~\nameref{sec:feature-importance}.
+
+\section{Forecasting Models}
+\phantomsection
+\label{section:Forecasting Models}
+The literature identifies four main model families: tree-based ensembles, deep learning architectures, hybrid and stacking approaches, and linear statistical baselines. Table~\ref{tab:literature_comparison} summarizes the studies discussed below.
+
+\subsection{Tree-Based Ensemble Models}
+Gradient-boosted trees such as XGBoost, CatBoost and LightGBM perform strongly in hourly air-quality prediction and are suitable benchmarks for tabular forecasting~\parencite{singh2026}. \textcite{ozupak2025} compared ten models on hourly pollutant data and found that Bayesian-optimized Support Vector Regression performed best ($R^2 = 99.94\%$), narrowly ahead of the tree ensembles. \textcite{tirinck2025} reported $R^2 = 0.999$ for XGBoost on eight years of daily AQI data in eastern Turkey, \textcite{ravindiran2025} found that ensemble stacking outperformed individual models for AQI prediction in Hyderabad (validation $R^2 = 0.999$), and \textcite{zhu2026} found Random Forest strongest for PM$_{2.5}$ ($R^2 = 0.99$) among tree models in four Chinese municipalities. Of particular relevance here, \textcite{kang2023} compared models trained on meteorology only with models that also included historical PM$_{2.5}$ and concluded that the historical data were the most important factor for accuracy at hourly and daily scales.
+
+\subsection{Deep Learning Architectures}
+Recurrent and Transformer architectures perform well when temporal complexity or spatial coverage is high. \textcite{cui2023} reported $R^2 = 94.4\%$ for a Transformer against 83.6\% for a CNN-LSTM-Attention model on hourly PM$_{2.5}$ at 12 Beijing stations. PatchTST~\parencite{nie2023} segments the series into subseries-level patches used as input tokens, which captures local dynamics efficiently over long sequences, and \textcite{fan2025} reported that a weighted ensemble of PatchTST and DLinear modestly reduced forecasting error compared with either model alone. Greater complexity does not always help, however: \textcite{yildirim2026} found that a narrow single-layer Transformer matched deeper PatchTST configurations on standard benchmarks.
+
+\subsection{Hybrid and Stacking Approaches}
+Stacking combines several base models through a meta-learner. For PM$_{2.5}$ in Macau, \textcite{tian2024} stacked LSTM and XGBoost base learners under a LightGBM meta-learner, which outperformed individual LSTM, CNN, Random Forest and XGBoost models on all metrics, supporting the evaluation of cross-family combinations.
+
+\subsection{Statistical Baselines}
+Linear models serve as benchmarks: \textcite{ozupak2025} included Elastic Net and Bayesian Ridge as baselines, and both performed worse than the leading models. DLinear~\parencite{zeng2023dlinear}, a linear decomposition model, is competitive with Transformers on long-horizon benchmarks, suggesting that complexity alone does not guarantee better performance when strong autoregressive predictors are available.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Forecasting studies reviewed in this chapter. Tree-based or stacked ensembles are the best-performing models in most of the reviewed studies.}
+  \label{tab:literature_comparison}
+  \small
+  \begin{tabular}{p{2.6cm}p{2cm}p{1.6cm}p{2.2cm}p{3.4cm}}
+    \toprule
+    \textbf{Study} & \textbf{Location} & \textbf{Target} & \textbf{Best Model} & \textbf{Key Result} \\
+    \midrule
+    \cite{ozupak2025} & \textit{not specified} & AQI & SVR (Bayesian optimized) & $R^2=99.94\%$ \\
+    \cite{tirinck2025} & E.\ Turkey & AQI & XGBoost & $R^2 = 0.999$ \\
+    \cite{ravindiran2025} & Hyderabad & AQI & Ensemble stacking & $R^2 = 0.999$ \\
+    \cite{kang2023} & \textit{not specified} & PM$_{2.5}$ & Stacking (RF+\allowbreak XGBoost+\allowbreak LightGBM) & Historical PM$_{2.5}$ most significant factor \\
+    \cite{zhu2026} & China (4 municipalities) & PM$_{2.5}$ & Random Forest & $R^2=0.99$ \\
+    \cite{cui2023} & Beijing (12 stns) & PM$_{2.5}$ & Transformer & $R^2 = 94.4\%$ vs.\ $83.6\%$ (CNN-LSTM) \\
+    \cite{fan2025} & \textit{general} & Time series & PatchTST+\allowbreak DLinear & Ensemble reduced error vs.\ standalone \\
+    \cite{yildirim2026} & \textit{general} & Time series & Comparable & Depth $\ne$ better performance \\
+    \cite{tian2024} & Macau & PM$_{2.5}$ & Stacked ensemble & Outperformed all individual models \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Model Validation and Generalisation}
+Validation strategy has a decisive effect on reported performance. Standard $k$-fold cross-validation randomly partitions observations, so later observations can enter the training set while earlier ones are used for evaluation, creating temporal leakage and overly optimistic estimates~\parencite{mendez2023}. \textcite{xie2025} showed empirically that random cross-validation overestimates performance relative to temporally aware validation, and \textcite{boser2024} showed that a model with a true $R^2$ of 0.09 can appear to reach $R^2 = 0.82$ under improperly structured splits. The appropriate alternative is a strict chronological split in which all training data precede all test data~\parencite{bhatt2026}, which this thesis adopts (training 2019--2023, test 2024).
+
+\section{Feature Importance and Ablation}
+\phantomsection
+\label{sec:feature-importance}
+Studies of feature contributions generally identify two groups as important. \textcite{zhalehdoost2025} showed that adding autoregressive PM lag features improved urban air-pollution models, which supports including several PM$_{2.5}$ lags. \textcite{rad2025} found that meteorological variables, especially temperature and humidity, contributed substantially to the variability of CO, O$_3$ and NO$_2$. How much each group contributes can vary with dataset, location and model, which is why this thesis quantifies it with a controlled leave-one-group-out ablation across several model families.
+
+\section{COVID-19 Lockdown and Counterfactual Modelling}
+\label{section:COVID-19 Lockdown and Counterfactual Modelling}
+The COVID-19 lockdowns of early 2020 form a natural experiment on the link between human activity and air quality, but a simple before-and-after comparison conflates reduced activity with meteorological variability; \textcite{lv2022} showed that ignoring meteorology can substantially overestimate PM$_{2.5}$ reductions. Machine-learning-based weather normalisation is therefore widely used~\parencite{rybarczyk2021, shi2021, lovrić2020}: a model trained on normal-activity data is applied to the lockdown period to produce a business-as-usual counterfactual, and the difference between this counterfactual and the observations estimates the change associated with the lockdown.
+
+Across eleven cities, \textcite{shi2021} found NO$_2$ reductions of typically 10--50\%, but smaller and more heterogeneous changes in PM$_{2.5}$, reflecting that it also stems from heating, secondary aerosol formation and regional transport, which did not fall to the same extent~\parencite{shi2021, cordero2022}. In Graz, Austria, \textcite{lovrić2020} reported NO$_2$ reductions of 37--42\% but only about 7--14\% for PM$_{10}$.
+
+The reliability of such estimates depends on the out-of-sample accuracy of the underlying model: a poorly performing model can produce a large gap even without any real effect. When autoregressive PM$_{2.5}$ features are used, feeding observed lockdown concentrations into the model also makes predictions follow the already-affected series and shrinks the gap. This thesis therefore adds three safeguards: (i) a predefined validity gate on out-of-sample accuracy, (ii) a recursive rollout in which lag and rolling features are built from the model's own earlier predictions, and (iii) a drift check that measures the rollout's own error on matched non-lockdown windows (Chapter~\nameref{chapter:Methodology}).
+
+\section{Research Gaps and Thesis Positioning}
+Previous work has examined many predictors, compared many models, and emphasized historical pollutant measurements and meteorology. Two gaps remain. First, few of the reviewed studies compare feature groups through controlled ablation while benchmarking several model families under the same temporal validation, so it is unclear how feature contributions vary across approaches (RQ1). Second, lockdown effects are generally estimated by before--after comparisons or weather normalisation, and fewer studies formulate the problem as a recursive counterfactual forecast and test it against rollout error accumulation (RQ2).
+
+To address these gaps, this thesis develops a framework based on six years of hourly data from seven stations in the Munich region. It (i) quantifies the contribution of feature groups by ablation, (ii) benchmarks several model families under strict chronological validation, and (iii) estimates the lockdown effect by recursive counterfactual forecasting under a predefined validity gate and an explicit drift correction.

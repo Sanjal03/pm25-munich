@@ -1,0 +1,10 @@
+station,has_timezone_info,timezone,index_type
+landshuter_allee,False,None (naive),<class 'pandas.DatetimeIndex'>
+stachus,False,None (naive),<class 'pandas.DatetimeIndex'>
+lothstrasse,False,None (naive),<class 'pandas.DatetimeIndex'>
+johanneskirchen,False,None (naive),<class 'pandas.DatetimeIndex'>
+augsburg_bourges,False,None (naive),<class 'pandas.DatetimeIndex'>
+augsburg_lfu,False,None (naive),<class 'pandas.DatetimeIndex'>
+andechs,False,None (naive),<class 'pandas.DatetimeIndex'>
+burghausen,False,None (naive),<class 'pandas.DatetimeIndex'>
+oberaudorf,False,None (naive),<class 'pandas.DatetimeIndex'>

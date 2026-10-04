@@ -1,0 +1,17 @@
+station,distance_km,raw_r,deseasonalized_r,drop
+München/Lothstraße,3,0.95,0.95,0.0
+München/Stachus,1,0.944,0.944,0.0
+München/Johanneskirchen,12,0.912,0.914,-0.002
+Augsburg/Bourges-Platz,70,0.885,0.883,0.002
+Augsburg/LfU,70,0.886,0.882,0.004
+Neu-Ulm/Gabelsbergerstraße,120,0.867,0.868,-0.001
+Stuttgart-Bad Cannstatt (control),190,0.86,0.861,-0.001
+Trostberg/Schwimmbadstraße,73,0.827,0.824,0.003
+Kempten (Allgäu)/Westendstraße,105,0.828,0.824,0.004
+Nürnberg/Muggenhof (control),165,0.796,0.794,0.002
+Mehring/Sportplatz,90,0.787,0.779,0.008
+Burghausen/Marktler Straße,93,0.785,0.778,0.007
+Oettingen/Goethestraße,116,0.736,0.73,0.006
+Andechs/Rothenfeld,35,0.692,0.725,-0.033
+Neustadt a.d. Donau/Eining,81,0.729,0.721,0.008
+Oberaudorf/Inntal-Autobahn,71,0.668,0.673,-0.005

@@ -1,0 +1,193 @@
+\chapter{Methodology}
+\phantomsection
+\label{chapter:Methodology}
+
+\section{Research Framework}
+\label{section:research-framework}
+This thesis investigates hourly PM$_{2.5}$ forecasting in the Munich region and uses the resulting framework to evaluate the contribution of different feature groups (RQ1) and to estimate changes in PM$_{2.5}$ during the COVID-19 lockdown (RQ2). The methodology has three phases. First, five models and a Persistence baseline are benchmarked on a held-out normal period, which also serves as a validity gate for the counterfactual analysis. Second, the best-performing model is used in a leave-one-group-out feature ablation. Third, all five models that pass the validity gate are used to construct a recursive counterfactual forecast for the lockdown, whose robustness to rollout drift is checked on matched non-lockdown windows. Figure~\ref{fig:pipeline_flowchart} summarizes the pipeline.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.45\linewidth]{tum-resources/images/pipeline_flowchart.png}
+    \caption{End-to-end experimental framework, from data collection to the analyses for the two research questions.}
+    \label{fig:pipeline_flowchart}
+\end{figure}
+
+\FloatBarrier
+\section{Data Preprocessing}
+\phantomsection
+\label{section:data-preprocessing}
+The raw air-quality and meteorological data are processed to handle missing observations, anomalous values and temporal inconsistencies. All data-driven thresholds (outlier caps and fences) are learned on the training years 2019--2023 only and then applied to all years, so that the 2024 test data never influences preprocessing.
+
+\subsection{Data Cleaning}
+\label{subsection:data-cleaning}
+The data described in Chapter~\ref{chapter:data} arrive in long format (one row per station, pollutant and timestamp). They are pivoted to a wide hourly table with one column per station--pollutant series (e.g., \texttt{mun\_stachus\_pm25}). Every hour of the study period receives a row, with \texttt{NaN} where no observation exists, so that missing intervals appear as explicit gaps rather than being silently absent. Station names are standardized to lowercase prefixes (e.g., M\"unchen/Landshuter Allee $\rightarrow$ \texttt{mun\_landshuter\_allee}).
+
+\subsection{Handling Missing Values}
+\label{subsection:missing-values-method}
+Missing values are handled by a gap-length-dependent scheme, using the gap categories identified in the exploratory analysis (\nameref{subsection:missing-values}):
+\begin{itemize}
+    \item \textbf{Short gaps ($\le 6$\,h):} linear interpolation between the neighbouring observations.
+    \item \textbf{Medium gaps ($7$--$24$\,h):} filled with the mean of the concurrent measurements of the same pollutant at the other stations.
+    \item \textbf{Long gaps ($>24$\,h):} not spatially imputed; the affected hours are marked by a binary \texttt{gap\_flag}.
+\end{itemize}
+A $264$-hour gap in PM$_{10}$ at \textit{Landshuter Allee} was filled from \textit{Stachus}, with remaining boundary gaps (up to 24\,h) closed by linear interpolation. Meteorological variables from DWD station 03379 are interpolated with per-variable limits matched to the observed gap lengths: $6$\,h (temperature), $26$\,h (relative humidity), $12$\,h (wind speed), $6$\,h (wind direction) and $3$\,h (pressure). The gradient-boosted tree models handle residual \texttt{NaN}s natively; DLinear and PatchTST require complete inputs and receive an additional forward/backward fill when their input windows are built, a pragmatic step that does not change the missing-value policy.
+
+\subsection{Outlier Treatment}
+\label{subsection:outlier-treatment}
+Extreme values are limited in two stages, by capping rather than removal so that the hourly series stays continuous for lag-based models:
+\begin{enumerate}
+    \item \textbf{Stage 1 (preprocessing):} every station--pollutant series is capped from above at its own 99.5th percentile, computed on 2019--2023.
+    \item \textbf{Stage 2 (feature engineering):} the PM$_{2.5}$ target of each station is clipped from above at the outer fence $Q_3 + 3\times\text{IQR}$, with quartiles computed per station on 2019--2023:
+    \begin{equation}
+        y_{\text{clipped}} = \min\big(y,\; Q_3 + 3\times\text{IQR}\big), \qquad \text{IQR} = Q_3 - Q_1 .
+    \end{equation}
+    The resulting fences lie between $27$ and $42~\upmu\text{g/m}^3$ depending on the station. Because the clipping is applied to the whole target series, the test targets against which models are evaluated are the clipped values.
+\end{enumerate}
+Consequently, short extreme episodes such as New Year's Eve fireworks are truncated by both stages; they are not removed, and are marked by a binary \texttt{is\_nye} indicator (Section~\ref{subsection:temporal-features}). An earlier version of the pipeline computed the stage-1 and stage-2 thresholds on the full period; a sensitivity check found this changed them by at most $2.4\%$ (stage~1) and $10\%$ (stage~2), and the thresholds are now learned on the training years only (Appendix~\ref{app:leak}).
+
+\subsection{Temporal Alignment and Daylight Saving Time}
+\label{subsection:temporal-alignment}
+All series use a uniform UTC time index, since local wall-clock time would create a repeated hour in autumn and a missing hour in spring and corrupt lag and rolling features. An audit of all 12 daylight-saving transitions between 2019 and 2024 at the seven stations found no duplicated or missing hours.
+
+\section{Feature Engineering}
+\label{section:feature-engineering}
+Each station's model uses 36 engineered features derived from the observations introduced in Chapter~\ref{chapter:data}. Thirty-three of them form five groups used in the ablation: PM$_{2.5}$ lags, rolling statistics, co-pollutants, meteorology, and temporal/calendar indicators. The remaining three are binary event flags. The features of hour $t$ combine PM$_{2.5}$ history up to $t-1$ with covariates observed at hour $t$ (co-pollutants, network-mean PM$_{2.5}$, weather and calendar); the task is therefore one-hour-ahead \emph{estimation} with concurrently observed covariates rather than a forecast from information available strictly before $t$.
+
+\subsection{PM$_{2.5}$ Lag Features}
+\label{subsection:lag-features}
+Eight lags of the target capture autocorrelation at multiple scales (the importance of lags is documented in Chapter~\ref{chapter:Literature Review}):
+\begin{equation}
+    x^{\text{lag}}_{t,h} = y_{t-h}, \quad h \in \{1, 2, 3, 6, 12, 24, 48, 168\}.
+\end{equation}
+The offsets represent short-range persistence (1--3\,h), diurnal and semi-diurnal cycles (6--24\,h) and multi-day to weekly patterns (48 and 168\,h).
+
+\subsection{Rolling Features}
+\label{subsection:rolling-features}
+Four rolling statistics summarize recent history: the mean over 6, 24 and 168\,h and the standard deviation over 24\,h. To avoid lookahead, they are computed on the target shifted by one hour, so a feature at hour $t$ uses observations through $t-1$ only:
+\begin{equation}
+    \bar{y}_{t,w} = \frac{1}{w} \sum_{i=1}^{w} y_{t-i}, \qquad w \in \{6, 24, 168\}.
+\end{equation}
+Minimum-observation thresholds ($1$, $6$, $24$ and $6$\,h for the four statistics, respectively) allow partial windows early in the series.
+
+\subsection{Co-Pollutant and Spatial Features}
+\label{subsection:copollutant-features}
+Four features describe the chemical and regional context at the same hour $t$:
+\begin{enumerate}
+    \item \textbf{PM$_{10}$ and NO$_2$} of the station (coarse-fraction reference and traffic/combustion tracer).
+    \item \textbf{O$_3$} (oxidative capacity). \textit{M\"unchen/Landshuter Allee} has no O$_3$ sensor, so concurrent \textit{Lothstra{\ss}e} values are used.
+    \item \textbf{Regional background} $x^{\text{bg}}_{s,t}$, the mean PM$_{2.5}$ of the other six stations $N\setminus\{s\}$, to separate local spikes from regional episodes:
+    \begin{equation}
+        x^{\text{bg}}_{s, t} = \frac{1}{|N \setminus \{s\}|} \sum_{k \in N \setminus \{s\}} y_{k, t}.
+    \end{equation}
+\end{enumerate}
+These four features are not lagged.
+
+\subsection{Meteorological Features}
+\label{subsection:meteorological-features}
+Eight features come from DWD station 03379: temperature $T$, relative humidity, wind speed $WS$ and pressure $P$, plus four derived quantities. Wind direction $\theta$ is a circular angle, so it is decomposed into zonal and meridional components,
+\begin{equation}
+    u = -WS \sin\theta, \qquad v = -WS \cos\theta,
+\end{equation}
+which avoids the artificial discontinuity at $0^\circ/360^\circ$. The 24-hour pressure tendency $\Delta P_{24\text{h},t} = P_t - P_{t-24}$ reflects the passage of synoptic fronts and stagnant high-pressure conditions, and the 1-hour temperature change $\Delta T_{1\text{h},t} = T_t - T_{t-1}$ captures rapid boundary-layer heating and cooling.
+
+\subsection{Temporal Features}
+\label{subsection:temporal-features}
+Twelve temporal features are constructed. Six cyclical encodings of hour of day, day of week and month avoid discontinuities at the cycle boundaries:
+\begin{equation}
+    x^{\text{sin}} = \sin\!\left(\tfrac{2\pi k}{K}\right), \quad x^{\text{cos}} = \cos\!\left(\tfrac{2\pi k}{K}\right), \qquad K \in \{24, 7, 12\},
+\end{equation}
+with $k$ the zero-indexed value. Three calendar indicators are \texttt{is\_weekend}, \texttt{is\_heating} (1 from October to March) and \texttt{year}. Three binary event flags complete the set:
+\texttt{is\_nye} (31 December 20:00 to 1 January 03:59 UTC, fireworks), \texttt{covid\_lockdown} (22 March to 4 May 2020) and \texttt{gap\_flag} (hours inside a long gap, Section~\ref{subsection:missing-values-method}).
+
+\section{Forecasting Models}
+\label{section:forecasting-models}
+Five models and a Persistence baseline are evaluated in the Phase~1 Champion/Challenger benchmark: three gradient-boosted tree ensembles (LightGBM, XGBoost, CatBoost), two sequence models (DLinear, PatchTST) and Persistence, which provides a reference for assessing skill. All hyperparameters are fixed in advance and identical across stations and experiments (Appendix~\ref{app:hyper}).
+
+\subsection{Tree-Based Models}
+\label{subsection:tree-models}
+The three tree ensembles share one configuration wherever the libraries allow: $600$ trees, maximum depth $6$, learning rate $0.05$, row subsampling $0.8$, $L_2$ regularization $1.0$ and random seed $42$. This ensures that performance differences reflect the algorithms rather than uneven tuning. LightGBM and XGBoost additionally use column subsampling ($0.8$) and $L_1$ regularization ($0.1$); these were not applied to CatBoost. Minimum leaf constraints are $\text{min\_child\_samples}=20$ (LightGBM) and $\text{min\_child\_weight}=5$ (XGBoost). In LightGBM, row subsampling only takes effect when a bagging frequency is set, which was not done, so LightGBM effectively trains on all rows.
+
+\subsection{Sequence Models}
+\label{subsection:sequence-models}
+DLinear \cite{zeng2023dlinear} and an adapted PatchTST \cite{nie2023} consume the raw 168-hour PM$_{2.5}$ history together with the 20 covariates of the non-lag groups (all except \texttt{year} and the three event flags).
+
+\paragraph{DLinear.} The input window is split by a 25-step moving average into a trend and a residual component, $Y^{\text{trend}} = \text{MovingAvg}(Y_{t-L:t})$ and $Y^{\text{res}} = Y_{t-L:t} - Y^{\text{trend}}$. In this implementation both components and the covariates are fitted jointly by a single closed-form least-squares regression; fitting the two branches separately would make each predict the global mean and bias the sum.
+
+\paragraph{PatchTST (adapted).} Standard PatchTST \cite{nie2023} is univariate. To give it the same information as the tabular models, the 168-hour window is split into seven non-overlapping 24-hour patches ($P=S=24$), embedded to $d_{\text{model}}=32$ and passed through a 2-layer Transformer encoder with 4 heads; the covariates are concatenated to the flattened encoder output before the final linear layer. The variant is simplified: it has no positional encoding and uses one global normalization instead of per-instance reversible normalization. It is trained for 30 epochs with Adam (learning rate $10^{-3}$, batch size 256).
+
+\subsection{Persistence Baseline}
+\label{subsection:persistence}
+The persistence model predicts $\hat{y}_t = y_{t-1}$. It has no parameters and serves as a mandatory sanity floor: because hourly PM$_{2.5}$ is strongly autocorrelated, any model must clearly outperform it to demonstrate that it extracts information beyond short-term continuity.
+
+\section{Experimental Design and Temporal Validation}
+\label{section:experimental-design}
+
+\subsection{Chronological Train-Test Split}
+\label{subsection:train-test}
+The data are split by calendar year, without shuffling: 2019--2023 for training ($43{,}824$ hourly timestamps per station before missing-data filtering) and the leap year 2024 for testing ($8{,}784$ timestamps). Random or k-fold cross-validation would leak future information into the training set through lag and rolling features (Chapter~\ref{chapter:Literature Review}). With a chronological split, a model never sees data after the training period; the concurrent covariates of hour $t$ are the only same-hour information it receives.
+
+\subsection{Validity Gate}
+\label{subsection:validity-gate}
+Because recursive forecasting compounds errors, only models that are accurate and unbiased on normal data are admitted to the RQ2 counterfactual. The \textit{Validity Gate} evaluates one-step-ahead predictions on 15 January 2020 00:00 to 21 March 2020 23:00 UTC ($1{,}608$ hours), immediately before the lockdown. A model--station combination qualifies if
+\begin{equation}
+    R^2 \ge 0.80 \;\land\; |\text{Bias}| < 1.5\,\upmu\text{g/m}^3 .
+\end{equation}
+All 35 model--station combinations evaluated in RQ2 qualified.
+
+\subsection{Evaluation Metrics}
+\label{subsection:evaluation-metrics}
+With observations $y_i$, predictions $\hat{y}_i$, mean $\bar{y}$ and $n$ samples, four metrics are reported:
+\begin{align}
+    \text{MAE} &= \tfrac{1}{n}\textstyle\sum_{i}|\hat{y}_i - y_i|, &
+    \text{RMSE} &= \sqrt{\tfrac{1}{n}\textstyle\sum_{i}(\hat{y}_i - y_i)^2}, \\
+    R^2 &= 1 - \frac{\sum_{i}(y_i - \hat{y}_i)^2}{\sum_{i}(y_i - \bar{y})^2}, &
+    \text{Bias} &= \tfrac{1}{n}\textstyle\sum_{i}(\hat{y}_i - y_i).
+\end{align}
+MAE and RMSE are in $\upmu\text{g/m}^3$; RMSE weights large errors more heavily. Bias is predicted minus observed, so a positive value indicates over-estimation.
+
+\section{RQ1: Feature Group Ablation}
+\label{section:RQ1}
+
+\subsection{Leave-One-Group-Out Ablation}
+\label{subsection:logo-ablation}
+The contribution of each feature group is measured by retraining the model without that group and computing the relative increase in MAE on the 2024 test set (standard chronological split):
+\begin{equation}
+    \Delta\text{MAE}\% = \frac{\text{MAE}_{\text{without } g} - \text{MAE}_{\text{all}}}{\text{MAE}_{\text{all}}} \times 100 .
+\end{equation}
+A larger positive value indicates a more important group. The five groups are: \textbf{PM$_{2.5}$ lags} (8 features), \textbf{rolling statistics} (4), \textbf{co-pollutants} (4: PM$_{10}$, NO$_2$, O$_3$, regional background), \textbf{meteorology} (8) and \textbf{temporal encodings} (9: the six cyclical encodings, \texttt{is\_weekend}, \texttt{is\_heating} and \texttt{year}). The three event flags are not part of any group and remain in all configurations.
+
+The ablation is run for the Phase~1 champion (CatBoost) and for all other models. For the tabular models, a group is removed by dropping its columns. For DLinear and PatchTST, the exogenous groups are removed by dropping the corresponding covariate channels. The lag group cannot be zeroed without producing out-of-distribution inputs, so each row's 168-hour history is instead replaced by that of a randomly chosen other row from the same split, which preserves the value distribution but destroys the relation to the target. Rolling statistics do not exist as a separate input for the sequence models, so that ablation is not applicable to them. (Had the champion been a sequence model, the ablation would have fallen back to the best tabular model; this was not needed.)
+
+\section{RQ2: COVID-19 Counterfactual Forecasting}
+\label{section:RQ2}
+
+\subsection{Counterfactual Setup}
+\label{subsection:counterfactual-setup}
+For every station--model pair the analysis has two steps. First, the model is verified on the Validity Gate window. Second, if it qualifies, the same trained model is rolled out recursively without retraining across the lockdown window (22 March 00:00 to 4 May 23:00, 2020; $1{,}056$ hours) to predict what PM$_{2.5}$ would have been without the lockdown. To make one trained model serve both roles honestly, the training data exclude the whole period from 15 January to 4 May 2020. Although the framework by default evaluates only the three best models, all five models are used at all seven stations, giving 35 runs.
+
+\subsection{Recursive Forecasting}
+\label{subsection:recursive-forecasting}
+Feeding observed lockdown-period PM$_{2.5}$ into the lag and rolling features would anchor the predictions to the observed, lockdown-affected values and push the gap toward zero, since PM$_{2.5}$ history is the dominant feature group (about $41\%$ for the tree models and $62$--$71\%$ for the sequence models, Chapter~\ref{chapter:Results}). A recursive rollout avoids this. Before 22 March 2020 the model sees observed values; from the first lockdown hour on, observed PM$_{2.5}$ is withheld:
+\begin{itemize}
+    \item \textbf{Tabular models:} at each hour the 8 lag and 4 rolling features are recomputed from the model's own earlier predictions $\hat{y}_{t-1}, \hat{y}_{t-2}, \dots$.
+    \item \textbf{Sequence models:} the 168-hour lookback window is updated by appending the latest prediction and dropping the oldest value.
+    \item \textbf{Covariates:} weather, calendar features, co-pollutants and the regional background remain at their observed values.
+\end{itemize}
+Because the co-pollutants and the regional background were themselves reduced by the lockdown, the counterfactual is conditioned on lockdown-affected inputs, which likely pulls the estimated gap toward zero. Because each forecast also depends on the model's own earlier predictions, forecast error can compound over the horizon; this is examined further in Chapter~\ref{chapter:Discussion}.
+
+\subsection{Lockdown Effect Estimation}
+\label{subsection:lockdown-effect}
+The lockdown effect is the difference between the mean counterfactual prediction and the mean observation over the lockdown window $T_{\text{lockdown}}$:
+\begin{equation}
+    \text{gap} = \overline{\hat{y}} - \overline{y}, \qquad \text{gap\%} = \frac{\text{gap}}{\overline{y}} \times 100 ,
+\end{equation}
+with both means taken over $T_{\text{lockdown}}$. A positive gap means that observed concentrations were lower than the counterfactual, consistent with a lockdown-related reduction. Because all 35 model--station combinations passed the Validity Gate, estimates are available for the complete matrix.
+
+\subsection{Drift Correction}
+\label{subsection:drift-correction}
+The Validity Gate certifies only one-step accuracy, not the reliability of a $1{,}056$-hour recursive rollout. To quantify rollout drift, the same trained models and the same rollout procedure are run over three $1{,}056$-hour windows of 2024, a year without intervention in which the observations are the correct ground truth: 22 March--4 May (the lockdown's calendar dates), 1 July--13 August and 1 October--13 November. For each window, the \emph{pseudo-gap} is the mean difference between rollout and observations over the hours where both exist. The baseline drift of a station--model pair is the mean pseudo-gap over its windows, and the drift-corrected gap is
+\begin{equation}
+    \text{gap}_{\text{corr}} = \text{gap} - \text{baseline drift}.
+\end{equation}
+A lockdown effect is considered to survive if $\text{gap}_{\text{corr}} > 0$. No formal significance test is applied; the gaps are point estimates.

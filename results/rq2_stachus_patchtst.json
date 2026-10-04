@@ -1,0 +1,12 @@
+{
+  "station": "stachus",
+  "model": "patchtst",
+  "sanity_valid": true,
+  "sanity_R2": 0.9351,
+  "sanity_gap": -0.264,
+  "mean_counterfactual": 11.93,
+  "mean_actual": 11.44,
+  "gap": 0.48,
+  "gap_pct": 4.2,
+  "method": "recursive_rollout"
+}

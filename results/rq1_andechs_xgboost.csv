@@ -1,0 +1,7 @@
+Configuration,delta_MAE_pct,R2,MAE,RMSE,Bias,n_test
+All features,0.0,0.9224,0.804,1.25,0.099,8723
+Without PM2.5_lags,45.65,0.8466,1.171,1.758,0.173,8723
+Without PM2.5_rolling,0.87,0.9218,0.811,1.255,0.114,8723
+Without Co-pollutants,6.84,0.8972,0.859,1.439,0.075,8723
+Without Meteorology,0.75,0.9211,0.81,1.261,0.106,8723
+Without Temporal,0.75,0.92,0.81,1.27,0.076,8723

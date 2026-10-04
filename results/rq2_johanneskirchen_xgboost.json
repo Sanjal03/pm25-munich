@@ -1,0 +1,12 @@
+{
+  "station": "johanneskirchen",
+  "model": "xgboost",
+  "sanity_valid": true,
+  "sanity_R2": 0.951,
+  "sanity_gap": -0.05,
+  "mean_counterfactual": 12.26,
+  "mean_actual": 12.29,
+  "gap": -0.04,
+  "gap_pct": -0.3,
+  "method": "recursive_rollout"
+}

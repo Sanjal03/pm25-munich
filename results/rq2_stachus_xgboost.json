@@ -1,0 +1,12 @@
+{
+  "station": "stachus",
+  "model": "xgboost",
+  "sanity_valid": true,
+  "sanity_R2": 0.9378,
+  "sanity_gap": -0.238,
+  "mean_counterfactual": 11.28,
+  "mean_actual": 11.44,
+  "gap": -0.17,
+  "gap_pct": -1.5,
+  "method": "recursive_rollout"
+}

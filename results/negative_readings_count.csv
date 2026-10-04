@@ -1,0 +1,29 @@
+station,pollutant,n_total,n_negative
+München/Stachus,PM10,52419,0
+München/Stachus,O3,52298,0
+München/Stachus,NO2,52433,0
+München/Stachus,PM2.5,52416,0
+München/Landshuter Allee,PM10,52135,0
+München/Landshuter Allee,O3,0,0
+München/Landshuter Allee,NO2,52465,0
+München/Landshuter Allee,PM2.5,52446,0
+München/Lothstraße,PM10,52158,0
+München/Lothstraße,O3,52174,0
+München/Lothstraße,NO2,52475,0
+München/Lothstraße,PM2.5,51894,0
+München/Johanneskirchen,PM10,51351,0
+München/Johanneskirchen,O3,52421,0
+München/Johanneskirchen,NO2,52183,0
+München/Johanneskirchen,PM2.5,52475,0
+Augsburg/Bourges-Platz,PM10,51911,0
+Augsburg/Bourges-Platz,O3,52457,0
+Augsburg/Bourges-Platz,NO2,52432,0
+Augsburg/Bourges-Platz,PM2.5,52464,0
+Augsburg/LfU,PM10,52258,0
+Augsburg/LfU,O3,52349,0
+Augsburg/LfU,NO2,52335,0
+Augsburg/LfU,PM2.5,51469,0
+Andechs/Rothenfeld,PM10,50647,0
+Andechs/Rothenfeld,O3,52078,0
+Andechs/Rothenfeld,NO2,52134,0
+Andechs/Rothenfeld,PM2.5,52176,0

@@ -1,0 +1,21 @@
+# Environment
+.venv/
+__pycache__/
+*.pyc
+.idea/
+.DS_Store
+.claude/
+
+# Training/run artifacts (regenerated on every run, not source)
+catboost_info/
+
+# Raw and intermediate data (large; fetched/derived, not source code —
+# see README for how to regenerate). Keep results/ and thesis_figs/,
+# those are the actual verified outputs.
+munich_aq_final/
+features/
+Munich_AQ_clean.csv
+Munich_AQ_features_all.csv
+Wind.txt
+Pressure.txt
+Temperature.txt

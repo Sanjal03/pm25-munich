@@ -1,0 +1,11 @@
+station_code,display_name,environment,distance_km,lat,lon,elevation_m
+DEBY037,München/Stachus,traffic-urban,1,48.13732,11.56481,520.0
+DEBY115,München/Landshuter Allee,traffic,3,48.14955,11.53653,520.0
+DEBY039,München/Lothstraße,urban-background,3,48.15455,11.55466,519.0
+DEBY089,München/Johanneskirchen,suburban,12,48.17319,11.64804,512.0
+DEBY189,München/Allach,suburban,14,,,
+DEBY109,Andechs/Rothenfeld,rural-background,35,47.96875,11.22017,700.0
+DEBY007,Augsburg/Bourges-Platz,urban-background,70,48.37658,10.88837,478.0
+DEBY099,Augsburg/LfU,suburban,70,48.32601,10.90305,495.0
+DEBY121,Oberaudorf/Inntal-Autobahn,rural-traffic,71,47.6485,12.1883,
+DEBY012,Burghausen/Marktler Straße,suburban-background,93,48.1772,12.8293,

@@ -1,0 +1,12 @@
+{
+  "station": "augsburg_bourges",
+  "model": "catboost",
+  "sanity_valid": true,
+  "sanity_R2": 0.9745,
+  "sanity_gap": 0.129,
+  "mean_counterfactual": 12.61,
+  "mean_actual": 11.72,
+  "gap": 0.89,
+  "gap_pct": 7.5,
+  "method": "recursive_rollout"
+}
